@@ -3,6 +3,7 @@ package com.simon.simonssecureapi.controller;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simon.simonssecureapi.MemberNotFoundException;
 import com.simon.simonssecureapi.dto.AppUserDto;
 import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
 import com.simon.simonssecureapi.dto.AppUserPutDto;
@@ -12,6 +13,7 @@ import com.simon.simonssecureapi.service.AdminService;
 import com.simon.simonssecureapi.util.ApiUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,25 +29,23 @@ public class AdminController {
     public AdminController(AdminService adminService, ObjectMapper objectMapper) {
         this.adminService = adminService;
         this.objectMapper = objectMapper;
-
-
     }
 
     @GetMapping
     public ResponseEntity<List<AppUserDto>> getAllAppUsers() {
-        return ResponseEntity.ok(adminService.getAllAppUsers());
+        return ResponseEntity.ok(adminService.getAllAppUsersThatAreMembers());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AppUserDto> getAppUserById(@PathVariable Long id) {
 
-        AppUserDto appUserDtoWithId = adminService.getAppUserById(id).orElseThrow();
+        AppUserDto appUserDtoWithId = adminService.getAppUserById(id).orElseThrow(()-> new MemberNotFoundException(id));
 
         return ResponseEntity.status(HttpStatus.OK).body(appUserDtoWithId);
     }
 
     @PostMapping
-    public ResponseEntity<AppUserDto> registerAppUser(@RequestBody AppUserRegistrationDto dto) {
+    public ResponseEntity<AppUserDto> registerAppUser(@Validated @RequestBody AppUserRegistrationDto dto) {
         AppUserDto registeredAppUserDto = adminService.registrateUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(registeredAppUserDto);
     }
@@ -58,8 +58,6 @@ public class AdminController {
 
     @PatchMapping("/{id}")
     ResponseEntity<AppUserDto> patchAppUser(@PathVariable Long id, @RequestBody Map<String, Object> updates ) throws JsonMappingException {
-
-        //ApiUtil.addressAlreadyExists(null);
 
         AppUserDto dto = adminService.patchAppUser(id, updates).get();
 

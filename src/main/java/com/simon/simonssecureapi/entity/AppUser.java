@@ -13,10 +13,10 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column(unique = true, nullable = false, length = 64)
     private String username;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 64)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
@@ -31,6 +31,12 @@ public class AppUser {
 
 
     public AppUser() {
+    }
+
+    public AppUser(String username, String password, Role role) {
+        this.username = username;
+        this.password = password;
+        this.role     = role;
     }
 
     public AppUser(String username, String password, Role role, Member member) {

@@ -1,5 +1,6 @@
 package com.simon.simonssecureapi.service;
 
+import com.simon.simonssecureapi.MemberNotFoundException;
 import com.simon.simonssecureapi.Role;
 import com.simon.simonssecureapi.dto.AppUserDto;
 import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
@@ -60,16 +61,20 @@ public class AdminService {
         return AppUserMapper.toDto(savedUser);
     }
 
-    public List<AppUserDto> getAllAppUsers() {
+    public List<AppUserDto> getAllAppUsersThatAreMembers() {
         return adminRepo.findAll()
                         .stream()
+                        .filter( appUser -> appUser.getMember() != null)
                         .map(AppUserMapper::toDto)
                         .toList();
     }
 
     public Optional<AppUserDto> getAppUserById(Long id){
 
-        AppUser appUserWithId = adminRepo.findById(id).orElseThrow(() -> new RuntimeException());
+        AppUser appUserWithId = adminRepo.findById(id).orElseThrow(() -> new MemberNotFoundException(id));
+
+        if(appUserWithId.getMember() == null)
+            return Optional.empty();
 
         return Optional.of( AppUserMapper.toDto(appUserWithId));
     }
@@ -102,6 +107,7 @@ public class AdminService {
         user.setPassword(dto.password());
         user.setRole(dto.role());
 
+        adminRepo.save(appUser);
         return AppUserMapper.toDto(appUser);
     }
 
