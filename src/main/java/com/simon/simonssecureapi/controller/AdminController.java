@@ -1,16 +1,12 @@
 package com.simon.simonssecureapi.controller;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simon.simonssecureapi.MemberNotFoundException;
 import com.simon.simonssecureapi.dto.AppUserDto;
-import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
 import com.simon.simonssecureapi.dto.AppUserPutDto;
-import com.simon.simonssecureapi.entity.AppUser;
-import com.simon.simonssecureapi.mapper.AppUserMapper;
+import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
 import com.simon.simonssecureapi.service.AdminService;
-import com.simon.simonssecureapi.util.ApiUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

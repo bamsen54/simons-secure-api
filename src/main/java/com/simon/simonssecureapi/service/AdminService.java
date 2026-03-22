@@ -100,12 +100,10 @@ public class AdminService {
         appUser.getMember().setPhone(dto.phone());
         appUser.getMember().setDateOfBirth(dto.dateOfBirth());
 
-
-        AppUser user = new AppUser();
-        user.setUsername(dto.username());
+        appUser.setUsername(dto.username());
         // Här kan du köra passwordEncoder.encode(dto.password()) sen
-        user.setPassword(dto.password());
-        user.setRole(dto.role());
+        appUser.setPassword(dto.password());
+        appUser.setRole(dto.role());
 
         adminRepo.save(appUser);
         return AppUserMapper.toDto(appUser);
