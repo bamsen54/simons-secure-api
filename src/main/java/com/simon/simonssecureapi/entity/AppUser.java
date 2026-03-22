@@ -2,7 +2,6 @@ package com.simon.simonssecureapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.simon.simonssecureapi.Role;
 import jakarta.persistence.*;
 
 @Entity

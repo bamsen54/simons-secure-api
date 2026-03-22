@@ -31,7 +31,7 @@ public class Member {
     @Column(name = "date_of_birth", unique = true, nullable = false, length = 20)
     private String dateOfBirth;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "member")
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "member")
     @JsonIgnoreProperties("member")
     private AppUser appUser;
 

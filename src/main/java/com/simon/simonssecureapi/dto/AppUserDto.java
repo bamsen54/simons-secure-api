@@ -1,6 +1,6 @@
 package com.simon.simonssecureapi.dto;
 
-import com.simon.simonssecureapi.Role;
+import com.simon.simonssecureapi.entity.Role;
 
 public record AppUserDto(
         Long id,

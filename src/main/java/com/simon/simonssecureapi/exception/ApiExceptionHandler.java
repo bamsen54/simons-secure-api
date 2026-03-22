@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -140,6 +141,17 @@ public class ApiExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", details, request));
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        return new ResponseEntity<>(
+                buildResponse(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage(), request),
+                HttpStatus.FORBIDDEN
+        );
     }
 
     @ExceptionHandler(Exception.class)

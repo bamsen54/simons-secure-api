@@ -1,6 +1,6 @@
 package com.simon.simonssecureapi.dto;
 
-import com.simon.simonssecureapi.Role;
+import com.simon.simonssecureapi.entity.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;

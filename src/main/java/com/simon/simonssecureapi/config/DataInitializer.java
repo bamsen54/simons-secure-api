@@ -1,6 +1,6 @@
 package com.simon.simonssecureapi.config;
 
-import com.simon.simonssecureapi.Role;
+import com.simon.simonssecureapi.entity.Role;
 import com.simon.simonssecureapi.entity.Address;
 import com.simon.simonssecureapi.entity.AppUser;
 import com.simon.simonssecureapi.entity.Member;
@@ -44,7 +44,7 @@ public class DataInitializer {
                 Member member2 = new Member("simon", "toivola", address1, "simontoivola@gmail.com", "0702915123", "1994-11-28");
                 AppUser appUser3 = new AppUser("simon_admin", hashedPass, Role.ADMIN, member2);
 
-                Member member3 = new Member("sara", "n", address1, "simontoivola@gmail.com", "-", "1998-01-01");
+                Member member3 = new Member("sara", "nilsson", address1, "simontoivola@gmail.com", "-", "1998-01-01");
                 AppUser appUser4 = new AppUser("sara_admin", hashedPass, Role.ADMIN, member3);
 
                 Member member4 = new Member("dennis", "wiklund", address3, "dennis@mail.com", "0701234567", "1994-08-01");

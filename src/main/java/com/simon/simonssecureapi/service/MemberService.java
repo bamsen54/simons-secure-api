@@ -58,7 +58,6 @@ public class MemberService {
             throw new AccessDeniedException("You can only update your own profile");
         }
 
-        // 5. Hämta membern (via appUser)
         Member member = appUser.getMember();
 
         if (dto.firstName() != null) {

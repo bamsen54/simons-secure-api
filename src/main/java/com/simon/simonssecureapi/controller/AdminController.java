@@ -40,7 +40,7 @@ public class AdminController {
     }
 
     @PostMapping
-    public ResponseEntity<AppUserDto> registerAppUser(@Valid @RequestBody AppUserRegistrationDto dto) {
+    public ResponseEntity<AppUserDto> postAppUser(@Valid @RequestBody AppUserRegistrationDto dto) {
         AppUserDto registeredAppUserDto = adminService.registrateUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(registeredAppUserDto);
     }

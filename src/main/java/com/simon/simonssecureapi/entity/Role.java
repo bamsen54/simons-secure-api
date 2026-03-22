@@ -1,4 +1,4 @@
-package com.simon.simonssecureapi;
+package com.simon.simonssecureapi.entity;
 
 public enum Role {
     ADMIN,
