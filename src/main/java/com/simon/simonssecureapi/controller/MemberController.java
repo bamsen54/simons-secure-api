@@ -5,11 +5,11 @@ import com.simon.simonssecureapi.dto.MemberDto;
 import com.simon.simonssecureapi.dto.MemberPutDto;
 import com.simon.simonssecureapi.repository.AdminRepo;
 import com.simon.simonssecureapi.service.MemberService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,15 +22,13 @@ public class MemberController {
         this.memberService = memberService;
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<MemberDto>> getAllMembers() {
         return ResponseEntity.status(HttpStatus.OK).body(memberService.getAllMembers());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MemberDto> updateOwnMember(@PathVariable Long id, @RequestBody MemberPutDto dto) {
-
+    public ResponseEntity<MemberDto> updateOwnMember(@PathVariable Long id, @Valid @RequestBody MemberPutDto dto) {
         return ResponseEntity.ok().body(memberService.putOwnMember(id, dto));
-
     }
 }

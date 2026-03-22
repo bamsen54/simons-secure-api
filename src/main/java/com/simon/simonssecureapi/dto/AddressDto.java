@@ -1,4 +1,10 @@
 package com.simon.simonssecureapi.dto;
 
-public record AddressDto(Long id, String street, String postalCode, String city) {
+import jakarta.validation.constraints.NotNull;
+
+public record AddressDto(
+        @NotNull Long id,
+        String street,
+        String postalCode,
+        String city) {
 }

@@ -5,8 +5,10 @@ import com.simon.simonssecureapi.dto.MemberPutDto;
 import com.simon.simonssecureapi.entity.Address;
 import com.simon.simonssecureapi.entity.AppUser;
 import com.simon.simonssecureapi.entity.Member;
+import com.simon.simonssecureapi.exception.ResourceAlreadyExistsException;
 import com.simon.simonssecureapi.mapper.MemberMapper;
 import com.simon.simonssecureapi.repository.AdminRepo;
+import com.simon.simonssecureapi.repository.MemberRepo;
 import com.simon.simonssecureapi.util.ApiUtil;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,17 +16,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class MemberService {
 
     private final AdminRepo adminRepo;
+    private final MemberRepo memberRepo;
     private final PasswordEncoder passwordEncoder;
 
-    public MemberService(AdminRepo adminRepo, PasswordEncoder passwordEncoder) {
-        this.adminRepo = adminRepo;
+    public MemberService(AdminRepo adminRepo, MemberRepo memberRepo, PasswordEncoder passwordEncoder) {
+        this.adminRepo       = adminRepo;
+        this.memberRepo      = memberRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -36,23 +39,21 @@ public class MemberService {
     }
 
     public MemberDto putOwnMember(Long id, MemberPutDto dto) {
-        // 1. Hämta inloggad användares username
+
         String username = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
 
-        // 2. Hitta AppUser (via adminRepo)
         AppUser appUser = adminRepo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Användare saknas"));
+                .orElseThrow(() -> new UsernameNotFoundException("No member with that username"));
 
-        // 3. Kolla att AppUser har en kopplad member
+        if(memberRepo.existsByDateOfBirthAndIdNot(dto.dateOfBirth(), appUser.getMember().getId()))
+            throw new ResourceAlreadyExistsException("A member with that dob already exists");
+
         if (appUser.getMember() == null) {
-            throw new AccessDeniedException("Användaren har ingen medlemsprofil");
+            throw new AccessDeniedException("User has no member profile");
         }
-
-
-        // 4. Kolla att id matchar den kopplade membern
         if (!appUser.getId().equals(id)) {
-            throw new AccessDeniedException("Du kan bara uppdatera din egen profil");
+            throw new AccessDeniedException("You can only update your own profile");
         }
 
         // 5. Hämta membern (via appUser)
@@ -89,7 +90,6 @@ public class MemberService {
 
         adminRepo.save(appUser);
 
-        // 9. Returnera MemberDto
         return MemberMapper.toDto(id, member);
     }
 }

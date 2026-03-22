@@ -31,8 +31,9 @@ public class TestController {
         this.apiUtil     = apiUtil;
     }
 
+
     @GetMapping("/rawdogg/{id}")
-    public AppUser getAllRawDogg(@PathVariable Long id) {
+    public AppUser getRawDogg(@PathVariable Long id) {
         return adminService.getRawAppUserById(id).get();
     }
 

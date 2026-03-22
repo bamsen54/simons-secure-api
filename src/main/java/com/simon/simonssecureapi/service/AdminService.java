@@ -8,12 +8,14 @@ import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
 import com.simon.simonssecureapi.entity.Address;
 import com.simon.simonssecureapi.entity.AppUser;
 import com.simon.simonssecureapi.entity.Member;
+import com.simon.simonssecureapi.exception.ResourceAlreadyExistsException;
 import com.simon.simonssecureapi.mapper.AppUserMapper;
 import com.simon.simonssecureapi.repository.AdminRepo;
+import com.simon.simonssecureapi.repository.MemberRepo;
 import com.simon.simonssecureapi.util.ApiUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -22,15 +24,23 @@ import java.util.Optional;
 @Service
 public class AdminService {
 
-    private AdminRepo adminRepo;
-    private PasswordEncoder passwordEncoder;
+    private final AdminRepo adminRepo;
+    private final MemberRepo memberRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    public AdminService(AdminRepo adminRepo, PasswordEncoder passwordEncoder) {
+    public AdminService(AdminRepo adminRepo, MemberRepo memberRepo, PasswordEncoder passwordEncoder) {
         this.adminRepo       = adminRepo;
+        this.memberRepo      = memberRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
     public AppUserDto registrateUser(AppUserRegistrationDto dto) {
+
+        if(memberRepo.existsByDateOfBirth(dto.dateOfBirth()))
+            throw new ResourceAlreadyExistsException("A member with that date of birth already exists");
+
+        if(adminRepo.existsByUsername(dto.username()))
+            throw new ResourceAlreadyExistsException("A user with that username already exists");
 
         Address updatedAddress = ApiUtil.toCompleteAddress(dto.street(), dto.postalCode(), dto.city());
 
@@ -83,10 +93,16 @@ public class AdminService {
 
     public AppUserDto putAppUser(Long id, AppUserPutDto dto) {
 
-        Address updatedAddress = ApiUtil.toCompleteAddress(dto.street(), dto.postalCode(), dto.city());
-
         AppUser appUser = adminRepo.findById(id).get();
 
+        if(memberRepo.existsByDateOfBirthAndIdNot(dto.dateOfBirth(), appUser.getMember().getId()))
+            throw new ResourceAlreadyExistsException("A member with that date of birth already exists");
+
+
+        if(adminRepo.existsByUsernameAndIdNot(dto.username(), id ))
+            throw new ResourceAlreadyExistsException("A user with that username already exists");
+
+        Address updatedAddress = ApiUtil.toCompleteAddress(dto.street(), dto.postalCode(), dto.city());
         Address existingAddress =  ApiUtil.getAddressWithFields(updatedAddress);
 
         if(existingAddress != null)
@@ -109,25 +125,20 @@ public class AdminService {
         return AppUserMapper.toDto(appUser);
     }
 
-    public Optional<AppUserDto> updateAppUser(AppUser appUser) {
-        adminRepo.save(appUser);
-        return Optional.of(AppUserMapper.toDto(appUser));
-    }
-
     @Transactional
     public Optional<AppUserDto> patchAppUser(Long id, Map<String, Object> updates) {
+
+        if(memberRepo.existsByDateOfBirthAndIdNot((String) updates.get("dateOfBirth"), id))
+            throw new ResourceAlreadyExistsException("A member with date of birth " + updates.get("dateOfBirth") + " already exists");
+
+        if(adminRepo.existsByUsernameAndIdNot((String) updates.get("username"), id))
+            throw new ResourceAlreadyExistsException("A user with that username already exists");
 
         AppUser appUser = adminRepo.findById(id).get();
 
         if(appUser.getMember() != null) {
 
             if(appUser.getMember().getAddress() != null) {
-
-//                Address addressFromUpdates = ApiUtil.toCompleteAddress(
-//                        (String) updates.get("street"),
-//                        (String) updates.get("postalCode"),
-//                        (String) updates.get("city"));
-
 
                 String street     = updates.containsKey("street") ? updates.get("street").toString() : appUser.getMember().getAddress().getStreet();
                 String postalCode = updates.containsKey("postalCode") ? updates.get("postalCode").toString() : appUser.getMember().getAddress().getPostalCode();
@@ -149,8 +160,6 @@ public class AdminService {
                     this.updateAppUserAddressInCaseNewAddress(appUser, updates);
                     System.out.println("null");
                 }
-
-
             }
 
             if(updates.get("firstName") != null)
@@ -180,10 +189,6 @@ public class AdminService {
 
 
         return Optional.of(AppUserMapper.toDto(appUser));
-    }
-
-    public Optional<AppUser> getRawAppUserById(Long id) {
-        return adminRepo.findById(id);
     }
 
     public void deleteAppUserById(Long id){
@@ -219,5 +224,9 @@ public class AdminService {
 
             appUser.getMember().setAddress(newAddress);
         }
+    }
+
+    public Optional<AppUser> getRawAppUserById(Long id) {
+        return adminRepo.findById(id);
     }
 }

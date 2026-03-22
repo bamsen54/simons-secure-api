@@ -7,6 +7,7 @@ import com.simon.simonssecureapi.dto.AppUserDto;
 import com.simon.simonssecureapi.dto.AppUserPutDto;
 import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
 import com.simon.simonssecureapi.service.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -39,19 +40,19 @@ public class AdminController {
     }
 
     @PostMapping
-    public ResponseEntity<AppUserDto> registerAppUser(@Validated @RequestBody AppUserRegistrationDto dto) {
+    public ResponseEntity<AppUserDto> registerAppUser(@Valid @RequestBody AppUserRegistrationDto dto) {
         AppUserDto registeredAppUserDto = adminService.registrateUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(registeredAppUserDto);
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<AppUserDto> putAppUser(@PathVariable Long id, @RequestBody AppUserPutDto dto) {
+    ResponseEntity<AppUserDto> putAppUser(@PathVariable Long id, @Valid @RequestBody AppUserPutDto dto) {
         AppUserDto updatedDto = adminService.putAppUser(id, dto);
         return ResponseEntity.status(HttpStatus.OK).body(updatedDto);
     }
 
     @PatchMapping("/{id}")
-    ResponseEntity<AppUserDto> patchAppUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) throws JsonMappingException {
+    ResponseEntity<AppUserDto> patchAppUser(@PathVariable Long id, @Valid @RequestBody Map<String, Object> updates) {
 
         AppUserDto dto = adminService.patchAppUser(id, updates).get();
 

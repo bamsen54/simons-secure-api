@@ -1,16 +1,20 @@
 package com.simon.simonssecureapi.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -67,6 +71,75 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException e, HttpServletRequest request){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildResponse(HttpStatus.BAD_REQUEST, "Bad request", e.getMessage(), request));
+    }
+
+
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException e,
+            jakarta.servlet.http.HttpServletRequest request) {
+
+        String message = "Database conflict: The record already exists or violates a database constraint.";
+
+        if (e.getRootCause() != null && e.getRootCause().getMessage().contains("Duplicate entry")) {
+            message = "Duplicate entry: The information you provided is already registered in our system.";
+        }
+
+        Map<String, Object> response = buildResponse(
+                HttpStatus.CONFLICT,
+                "Conflict",
+                message,
+                request);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceExists(ResourceAlreadyExistsException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildResponse(
+                        HttpStatus.CONFLICT,
+                        "Conflict",
+                        e.getMessage(),
+                        request));
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoHandlerFound(
+            org.springframework.web.servlet.NoHandlerFoundException e,
+            jakarta.servlet.http.HttpServletRequest request) {
+
+        String message = "The path '" + e.getRequestURL() + "' does not exist on this server.";
+
+        Map<String, Object> response = buildResponse(
+                HttpStatus.NOT_FOUND,
+                "Not Found",
+                message,
+                request);
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleJsonErrors(
+            HttpMessageNotReadableException e, HttpServletRequest request) {
+
+        String details = "Malformed JSON request";
+        Throwable cause = e.getCause();
+
+        if (cause instanceof InvalidFormatException ife) {
+            if (ife.getTargetType().isEnum()) {
+                details = String.format("Invalid value '%s'. Accepted values are: %s",
+                        ife.getValue(),
+                        Arrays.toString(ife.getTargetType().getEnumConstants()));
+            } else {
+                details = "Invalid data type for field: " + ife.getPath().get(0).getFieldName();
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", details, request));
     }
 
     @ExceptionHandler(Exception.class)

@@ -12,9 +12,9 @@ public interface AdminRepo extends JpaRepository<AppUser, Long> {
     @EntityGraph(attributePaths = {"member", "member.address"})
     List<AppUser> findAllByMemberIsNotNull();
 
-
     @EntityGraph(attributePaths = {"member", "member.address"})
     Optional<AppUser> findByUsername(String username);
 
-
+    boolean existsByUsername(String username);
+    boolean existsByUsernameAndIdNot(String username, Long id);
 }

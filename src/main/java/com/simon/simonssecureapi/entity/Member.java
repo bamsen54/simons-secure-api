@@ -28,7 +28,7 @@ public class Member {
     @Column(name = "phone", nullable = true, length = 24)
     private String phone;
 
-    @Column(name = "date_of_birth", unique = true,   nullable = false, length = 20)
+    @Column(name = "date_of_birth", unique = true, nullable = false, length = 20)
     private String dateOfBirth;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "member")
