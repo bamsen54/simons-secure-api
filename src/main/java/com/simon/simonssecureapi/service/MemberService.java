@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -38,6 +39,7 @@ public class MemberService {
         return appUsersWithMember.stream().map(appUser -> MemberMapper.toDto(appUser.getId(), appUser.getMember())).toList();
     }
 
+    @Transactional
     public MemberDto putOwnMember(Long id, MemberPutDto dto) {
 
         String username = SecurityContextHolder.getContext()

@@ -34,6 +34,7 @@ public class AdminService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public AppUserDto registrateUser(AppUserRegistrationDto dto) {
 
         if(memberRepo.existsByDateOfBirth(dto.dateOfBirth()))
@@ -90,7 +91,7 @@ public class AdminService {
         return Optional.of( AppUserMapper.toDto(appUserWithId));
     }
 
-
+    @Transactional
     public AppUserDto putAppUser(Long id, AppUserPutDto dto) {
 
         AppUser appUser = adminRepo.findById(id).get();
@@ -127,70 +128,65 @@ public class AdminService {
 
     @Transactional
     public Optional<AppUserDto> patchAppUser(Long id, Map<String, Object> updates) {
+        AppUser appUser = adminRepo.findById(id)
+                .orElseThrow(() -> new MemberNotFoundException(id));
 
-        if(memberRepo.existsByDateOfBirthAndIdNot((String) updates.get("dateOfBirth"), id))
-            throw new ResourceAlreadyExistsException("A member with date of birth " + updates.get("dateOfBirth") + " already exists");
+        if (updates.containsKey("username")) {
+            String newUsername = (String) updates.get("username");
+            if (adminRepo.existsByUsernameAndIdNot(newUsername, id)) {
+                throw new ResourceAlreadyExistsException("A user with that username already exists");
+            }
+            appUser.setUsername(newUsername);
+        }
 
-        if(adminRepo.existsByUsernameAndIdNot((String) updates.get("username"), id))
-            throw new ResourceAlreadyExistsException("A user with that username already exists");
+        if (appUser.getMember() != null) {
+            if (updates.containsKey("dateOfBirth")) {
+                String newDob = (String) updates.get("dateOfBirth");
+                Long memberId = appUser.getMember().getId();
 
-        AppUser appUser = adminRepo.findById(id).get();
-
-        if(appUser.getMember() != null) {
-
-            if(appUser.getMember().getAddress() != null) {
-
-                String street     = updates.containsKey("street") ? updates.get("street").toString() : appUser.getMember().getAddress().getStreet();
-                String postalCode = updates.containsKey("postalCode") ? updates.get("postalCode").toString() : appUser.getMember().getAddress().getPostalCode();
-                String city       = updates.containsKey("city") ? updates.get("city").toString() : appUser.getMember().getAddress().getCity();
-
-                System.out.println(street + " " + postalCode + " " + city);
-
-                Address addressFromUpdates = ApiUtil.toCompleteAddress(
-                        street,
-                        postalCode,
-                        city
-                );
-
-                if(ApiUtil.getAddressWithFields(addressFromUpdates) != null) {
-                    appUser.getMember().setAddress(ApiUtil.getAddressWithFields(addressFromUpdates));
-                    System.out.println("not null");
+                if (memberRepo.existsByDateOfBirthAndIdNot(newDob, memberId)) {
+                    throw new ResourceAlreadyExistsException("A member with date of birth " + newDob + " already exists");
                 }
-                else {
+                appUser.getMember().setDateOfBirth(newDob);
+            }
+
+            if (appUser.getMember().getAddress() != null) {
+                String street = updates.containsKey("street") ? updates.get("street").toString() : appUser.getMember().getAddress().getStreet();
+                String postalCode = updates.containsKey("postalCode") ? updates.get("postalCode").toString() : appUser.getMember().getAddress().getPostalCode();
+                String city = updates.containsKey("city") ? updates.get("city").toString() : appUser.getMember().getAddress().getCity();
+
+                Address addressFromUpdates = ApiUtil.toCompleteAddress(street, postalCode, city);
+
+                if (ApiUtil.getAddressWithFields(addressFromUpdates) != null) {
+                    appUser.getMember().setAddress(ApiUtil.getAddressWithFields(addressFromUpdates));
+                } else {
                     this.updateAppUserAddressInCaseNewAddress(appUser, updates);
-                    System.out.println("null");
                 }
             }
 
-            if(updates.get("firstName") != null)
+            if (updates.get("firstName") != null)
                 appUser.getMember().setFirstName((String) updates.get("firstName"));
 
-            if(updates.get("lastName") != null)
+            if (updates.get("lastName") != null)
                 appUser.getMember().setLastName((String) updates.get("lastName"));
 
-            if(updates.get("email") != null)
+            if (updates.get("email") != null)
                 appUser.getMember().setEmail((String) updates.get("email"));
 
-            if(updates.get("dateOfBirth") != null)
-                appUser.getMember().setDateOfBirth((String) updates.get("dateOfBirth"));
-
-            if(updates.containsKey("phone"))
+            if (updates.containsKey("phone"))
                 appUser.getMember().setPhone((String) updates.get("phone"));
         }
 
-        if(updates.get("username") != null)
-            appUser.setUsername((String) updates.get("username"));
+        if (updates.get("password") != null)
+            appUser.setPassword(passwordEncoder.encode((String) updates.get("password")));
 
-        if(updates.get("password") != null)
-            appUser.setPassword( passwordEncoder.encode((String) updates.get("password")));
-
-        if(updates.get("role") != null)
+        if (updates.get("role") != null)
             appUser.setRole(Role.valueOf((String) updates.get("role")));
-
 
         return Optional.of(AppUserMapper.toDto(appUser));
     }
 
+    @Transactional
     public void deleteAppUserById(Long id){
         adminRepo.deleteById(id);
     }
