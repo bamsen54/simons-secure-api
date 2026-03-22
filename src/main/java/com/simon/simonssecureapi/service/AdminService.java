@@ -102,8 +102,7 @@ public class AdminService {
         appUser.getMember().setDateOfBirth(dto.dateOfBirth());
 
         appUser.setUsername(dto.username());
-        // Här kan du köra passwordEncoder.encode(dto.password()) sen
-        appUser.setPassword(dto.password());
+        appUser.setPassword(passwordEncoder.encode(dto.password()));
         appUser.setRole(dto.role());
 
         adminRepo.save(appUser);
@@ -124,16 +123,34 @@ public class AdminService {
 
             if(appUser.getMember().getAddress() != null) {
 
+//                Address addressFromUpdates = ApiUtil.toCompleteAddress(
+//                        (String) updates.get("street"),
+//                        (String) updates.get("postalCode"),
+//                        (String) updates.get("city"));
+
+
+                String street     = updates.containsKey("street") ? updates.get("street").toString() : appUser.getMember().getAddress().getStreet();
+                String postalCode = updates.containsKey("postalCode") ? updates.get("postalCode").toString() : appUser.getMember().getAddress().getPostalCode();
+                String city       = updates.containsKey("city") ? updates.get("city").toString() : appUser.getMember().getAddress().getCity();
+
+                System.out.println(street + " " + postalCode + " " + city);
+
                 Address addressFromUpdates = ApiUtil.toCompleteAddress(
-                        (String) updates.get("street"),
-                        (String) updates.get("postalCode"),
-                        (String) updates.get("city"));
+                        street,
+                        postalCode,
+                        city
+                );
 
-                if(ApiUtil.getAddressWithFields(addressFromUpdates) != null)
+                if(ApiUtil.getAddressWithFields(addressFromUpdates) != null) {
                     appUser.getMember().setAddress(ApiUtil.getAddressWithFields(addressFromUpdates));
-
-                else
+                    System.out.println("not null");
+                }
+                else {
                     this.updateAppUserAddressInCaseNewAddress(appUser, updates);
+                    System.out.println("null");
+                }
+
+
             }
 
             if(updates.get("firstName") != null)
@@ -148,14 +165,15 @@ public class AdminService {
             if(updates.get("dateOfBirth") != null)
                 appUser.getMember().setDateOfBirth((String) updates.get("dateOfBirth"));
 
-            appUser.getMember().setPhone((String) updates.get("phone"));
+            if(updates.containsKey("phone"))
+                appUser.getMember().setPhone((String) updates.get("phone"));
         }
 
         if(updates.get("username") != null)
             appUser.setUsername((String) updates.get("username"));
 
         if(updates.get("password") != null)
-            appUser.setPassword((String) updates.get("password"));
+            appUser.setPassword( passwordEncoder.encode((String) updates.get("password")));
 
         if(updates.get("role") != null)
             appUser.setRole(Role.valueOf((String) updates.get("role")));
@@ -185,19 +203,19 @@ public class AdminService {
                 newAddress.setStreet((String) updates.get("street"));
 
             else
-                newAddress.setStreet("");
+                newAddress.setStreet(appUser.getMember().getAddress().getStreet());
 
             if (updates.get("postalCode") != null)
                 newAddress.setPostalCode((String) updates.get("postalCode"));
 
             else
-                newAddress.setPostalCode("");
+                newAddress.setPostalCode(appUser.getMember().getAddress().getPostalCode());
 
             if (updates.get("city") != null)
                 newAddress.setCity((String) updates.get("city"));
 
             else
-                newAddress.setCity("");
+                newAddress.setCity(appUser.getMember().getAddress().getCity());
 
             appUser.getMember().setAddress(newAddress);
         }
