@@ -1,4 +1,4 @@
-package com.simon.simonssecureapi;
+package com.simon.simonssecureapi.exception;
 
 public class MemberNotFoundException extends RuntimeException {
     public MemberNotFoundException(String message) {

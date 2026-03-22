@@ -63,8 +63,8 @@ public class AppUserMapper {
         if (user == null) return null;
 
         return new AppUserDto(
+                user.getId(),
                 user.getUsername(),
-                user.getPassword(),
                 user.getRole(),
                 user.getMember().getFirstName(),
                 user.getMember().getLastName(),

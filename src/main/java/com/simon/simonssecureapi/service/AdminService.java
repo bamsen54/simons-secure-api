@@ -1,6 +1,6 @@
 package com.simon.simonssecureapi.service;
 
-import com.simon.simonssecureapi.MemberNotFoundException;
+import com.simon.simonssecureapi.exception.MemberNotFoundException;
 import com.simon.simonssecureapi.Role;
 import com.simon.simonssecureapi.dto.AppUserDto;
 import com.simon.simonssecureapi.dto.AppUserPutDto;

@@ -2,7 +2,7 @@ package com.simon.simonssecureapi.controller;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simon.simonssecureapi.MemberNotFoundException;
+import com.simon.simonssecureapi.exception.MemberNotFoundException;
 import com.simon.simonssecureapi.dto.AppUserDto;
 import com.simon.simonssecureapi.dto.AppUserPutDto;
 import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
@@ -20,11 +20,9 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
-    private final ObjectMapper objectMapper;
 
     public AdminController(AdminService adminService, ObjectMapper objectMapper) {
         this.adminService = adminService;
-        this.objectMapper = objectMapper;
     }
 
     @GetMapping
