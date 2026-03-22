@@ -3,29 +3,31 @@ package com.simon.simonssecureapi.service;
 import com.simon.simonssecureapi.MemberNotFoundException;
 import com.simon.simonssecureapi.Role;
 import com.simon.simonssecureapi.dto.AppUserDto;
-import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
 import com.simon.simonssecureapi.dto.AppUserPutDto;
+import com.simon.simonssecureapi.dto.AppUserRegistrationDto;
 import com.simon.simonssecureapi.entity.Address;
 import com.simon.simonssecureapi.entity.AppUser;
 import com.simon.simonssecureapi.entity.Member;
 import com.simon.simonssecureapi.mapper.AppUserMapper;
 import com.simon.simonssecureapi.repository.AdminRepo;
 import com.simon.simonssecureapi.util.ApiUtil;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class AdminService {
 
     private AdminRepo adminRepo;
+    private PasswordEncoder passwordEncoder;
 
-    public AdminService(AdminRepo adminRepo) {
-        this.adminRepo = adminRepo;
+    public AdminService(AdminRepo adminRepo, PasswordEncoder passwordEncoder) {
+        this.adminRepo       = adminRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AppUserDto registrateUser(AppUserRegistrationDto dto) {
@@ -51,8 +53,7 @@ public class AdminService {
 
         AppUser user = new AppUser();
         user.setUsername(dto.username());
-        // Här kan du köra passwordEncoder.encode(dto.password()) sen
-        user.setPassword(dto.password());
+        user.setPassword(passwordEncoder.encode(dto.password()));
         user.setRole(dto.role());
         user.setMember(member);
 

@@ -53,7 +53,7 @@ public class AdminController {
     }
 
     @PatchMapping("/{id}")
-    ResponseEntity<AppUserDto> patchAppUser(@PathVariable Long id, @RequestBody Map<String, Object> updates ) throws JsonMappingException {
+    ResponseEntity<AppUserDto> patchAppUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) throws JsonMappingException {
 
         AppUserDto dto = adminService.patchAppUser(id, updates).get();
 
